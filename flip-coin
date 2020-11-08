@@ -1,0 +1,10 @@
+#!/bin/sh
+
+choice="$(shuf -i 0-1 -n 1)"
+
+if test "$choice" = 1
+then
+    echo 'heads'
+else
+    echo 'tails'
+fi
