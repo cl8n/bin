@@ -1,0 +1,66 @@
+#!/bin/sh
+
+DESTINATION='https://up.clayton.cc/upload-bash.php'
+
+usage()
+{
+    printf 'Usage: %s [-p] <file> [name]\n' "$(basename "$0")"
+    exit 1
+}
+
+if test "$1" = '-p' -o "$1" = '--permanent'
+then
+    FILE="$2"
+    PERMANENT=1
+    NAME="$3"
+else
+    FILE="$1"
+    PERMANENT=0
+fi
+
+if test -z "$FILE"
+then
+    echo 'Missing file name.'
+    usage
+fi
+
+if test ! -f "$FILE"
+then
+    printf '%s is not a regular file.\n' "$FILE"
+    usage
+fi
+
+FILESIZE=$(wc -c < "$FILE")
+if test $FILESIZE -ge 128000000
+then
+    printf '%s is too large (expected less than 128MB, got %d).\n' "$FILE" $FILESIZE
+    usage
+fi
+
+if test -z "$NAME"
+then
+    NAME="$(basename "$FILE")"
+fi
+
+TEMP="$(mktemp)"
+CODE=$( \
+    curl -s -X POST -o "$TEMP" -w '%{http_code}' \
+        -F file=@"$FILE" \
+        -F name="$NAME" \
+        -F permanent=$PERMANENT \
+        -F secret="$(cat ~/bin/upload-secret)" \
+        "$DESTINATION" \
+)
+
+if test $CODE -eq 200
+then
+    printf 'Upload complete: %s\n' "$(cat "$TEMP")"
+    if test -e /dev/clipboard
+    then
+        cat "$TEMP" > /dev/clipboard
+    fi
+else
+    printf 'Upload failed: %s\n' "$(cat "$TEMP")"
+fi
+
+rm "$TEMP"
