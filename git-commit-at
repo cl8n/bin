@@ -1,13 +1,18 @@
 #!/bin/sh
 
-if test -z "$1" -o "$1" = '-h' -o "$1" = '--help'
-then
-    echo "Usage: $(basename "$0") <date>"
+usage()
+{
+    printf 'Usage: %s <date> [git commit args...]\n' "$(basename "$0")"
     echo 'Date example: Thu, 07 Apr 2005 22:13:13 +0200'
     exit 1
+}
+
+if test $# -lt 1
+then
+    usage
 fi
 
-DATE="$1"
+date="$1"
 shift
 
-GIT_AUTHOR_DATE="$DATE" GIT_COMMITTER_DATE="$DATE" git commit "$@"
+GIT_AUTHOR_DATE="$date" GIT_COMMITTER_DATE="$date" git commit "$@"

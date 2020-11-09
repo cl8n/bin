@@ -1,7 +1,5 @@
 #!/bin/sh
 
-DESTINATION='https://up.clayton.cc/upload-bash.php'
-
 usage()
 {
     printf 'Usage: %s [-p] <file> [name]\n' "$(basename "$0")"
@@ -10,57 +8,59 @@ usage()
 
 if test "$1" = '-p' -o "$1" = '--permanent'
 then
-    FILE="$2"
-    PERMANENT=1
-    NAME="$3"
+    file="$2"
+    permanent=1
+    name="$3"
 else
-    FILE="$1"
-    PERMANENT=0
+    file="$1"
+    permanent=0
 fi
 
-if test -z "$FILE"
+if test -z "$file"
 then
     echo 'Missing file name.'
     usage
 fi
 
-if test ! -f "$FILE"
+if test ! -f "$file"
 then
-    printf '%s is not a regular file.\n' "$FILE"
+    printf '%s is not a regular file.\n' "$file"
     usage
 fi
 
-FILESIZE=$(wc -c < "$FILE")
-if test $FILESIZE -ge 128000000
+filesize=$(wc -c < "$file")
+
+if test $filesize -ge 128000000
 then
-    printf '%s is too large (expected less than 128MB, got %d).\n' "$FILE" $FILESIZE
+    printf '%s is too large (expected less than 128MB, got %d).\n' "$file" $filesize
     usage
 fi
 
-if test -z "$NAME"
+if test -z "$name"
 then
-    NAME="$(basename "$FILE")"
+    name="$(basename "$file")"
 fi
 
-TEMP="$(mktemp)"
-CODE=$( \
-    curl -s -X POST -o "$TEMP" -w '%{http_code}' \
-        -F file=@"$FILE" \
-        -F name="$NAME" \
-        -F permanent=$PERMANENT \
+temp="$(mktemp)"
+code=$( \
+    curl -s -X POST -o "$temp" -w '%{http_code}' \
+        -F file=@"$file" \
+        -F name="$name" \
+        -F permanent=$permanent \
         -F secret="$(cat ~/bin/upload-secret)" \
-        "$DESTINATION" \
+        'https://up.clayton.cc/upload-bash.php' \
 )
 
-if test $CODE -eq 200
+if test $code -eq 200
 then
-    printf 'Upload complete: %s\n' "$(cat "$TEMP")"
+    printf 'Upload complete: %s\n' "$(cat "$temp")"
+
     if test -e /dev/clipboard
     then
-        cat "$TEMP" > /dev/clipboard
+        cat "$temp" > /dev/clipboard
     fi
 else
-    printf 'Upload failed: %s\n' "$(cat "$TEMP")"
+    printf 'Upload failed: %s\n' "$(cat "$temp")"
 fi
 
-rm "$TEMP"
+rm "$temp"

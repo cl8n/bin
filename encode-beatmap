@@ -1,5 +1,16 @@
 #!/bin/sh
 
+usage()
+{
+    printf 'Usage: %s <input audio> <output mp3>\n' "$(basename "$0")"
+    exit 1
+}
+
+if test $# -ne 2
+then
+    usage
+fi
+
 ffmpeg -i "$1" -i ~/bin/resources/beatmap-cover-art.png \
     -map 0:0 -map 1:0 -map_metadata -1 \
     -c:a libmp3lame -b:a 192k -c:v copy \
