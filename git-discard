@@ -13,4 +13,4 @@ git checkout -q master
 git branch -D "$branch_name" -q
 git pull -q
 
-git branch --list
+git status
