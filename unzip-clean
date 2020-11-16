@@ -47,9 +47,9 @@ done
 unzip -d "$destination" "$archive"
 
 contents="$(ls -1Aq "$destination")"
-foldername="$(realpath -q "$contents")"
+foldername="$(realpath -q "$destination/$contents")"
 
-if test "$(printf "$contents" | wc -l)" -eq 1 -a -d "$foldername"
+if test "$(echo "$contents" | wc -l)" -eq 1 -a -d "$foldername"
 then
     mv "$foldername" "$foldername~"
     globall "$foldername~" | xargs -0 mv -t "$destination"
