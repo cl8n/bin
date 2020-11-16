@@ -47,7 +47,7 @@ done
 unzip -d "$destination" "$archive"
 
 contents="$(ls -1Aq "$destination")"
-foldername="$(realpath "$contents")"
+foldername="$(realpath -q "$contents")"
 
 if test "$(printf "$contents" | wc -l)" -eq 1 -a -d "$foldername"
 then
