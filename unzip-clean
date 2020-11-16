@@ -36,7 +36,7 @@ fi
 if test -z "$destination"
 then
     zipname="$(basename "$archive")"
-    destination="${zipname%.zip}"
+    destination="$(dirname "$archive")/${zipname%.zip}"
 fi
 
 while test -e "$destination"
