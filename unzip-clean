@@ -1,0 +1,57 @@
+#!/bin/sh
+
+globall()
+{
+    for i in "$1"/* "$1"/.*
+    do
+        test "${i##*/}" = . || \
+        test "${i##*/}" = .. || \
+        test "${i##*/}" = \* || \
+        test "${i##*/}" = .\* && continue
+
+        printf "$i\0"
+    done
+}
+
+usage()
+{
+    printf 'Usage: %s <archive> [destination]\n' "$(basename "$0")"
+    exit 1
+}
+
+if test $# -lt 1 -o $# -gt 2
+then
+    usage
+fi
+
+archive="$1"
+destination="$2"
+
+if test ! -f "$archive"
+then
+    printf '%s is not a regular file.\n' "$archive"
+    usage
+fi
+
+if test -z "$destination"
+then
+    zipname="$(basename "$archive")"
+    destination="${zipname%.zip}"
+fi
+
+while test -e "$destination"
+do
+    destination="$destination.new"
+done
+
+unzip -d "$destination" "$archive"
+
+contents="$(ls -1Aq "$destination")"
+foldername="$(realpath "$contents")"
+
+if test "$(printf "$contents" | wc -l)" -eq 1 -a -d "$foldername"
+then
+    mv "$foldername" "$foldername~"
+    globall "$foldername~" | xargs -0 mv -t "$destination"
+    rmdir "$foldername~"
+fi
