@@ -1,0 +1,50 @@
+#!/usr/bin/env node
+
+const { createHash } = require('crypto');
+const { createReadStream, readdirSync } = require('fs');
+const { join } = require('path');
+
+function md5(filename) {
+    return new Promise((resolve) => {
+        const output = createHash('md5');
+        const input = createReadStream(filename);
+
+        output.once('readable', () => resolve(output.read().toString('hex')));
+
+        input.pipe(output);
+    });
+}
+
+if (process.argv.length !== 3) {
+    console.error(`Usage: ${process.argv[1]} <directory>`);
+    process.exit(1);
+}
+
+const directory = process.argv[2];
+const dirents = readdirSync(directory, { withFileTypes: true });
+const files = new Map();
+
+(async () => {
+    for (const dirent of dirents) {
+        if (!dirent.isFile())
+            continue;
+
+        const filename = join(directory, dirent.name);
+        const sum = await md5(filename);
+
+        if (!files.has(sum))
+            files.set(sum, []);
+
+        files.get(sum).push(filename);
+    }
+
+    for (const group of files.values()) {
+        if (group.length < 2)
+            continue;
+
+        const filesToReport = group.sort((a, b) => a.length - b.length);
+        filesToReport.shift();
+
+        process.stdout.write(filesToReport.join('\0') + '\0');
+    }
+})();
