@@ -3,6 +3,12 @@
 branch_name="$(git branch --show-current)"
 status="$(git status --porcelain)"
 
+if test "$branch_name" = master
+then
+    echo 'The current branch is master'
+    exit 1
+fi
+
 if test "$status"
 then
     echo 'Working directory is not clean'
