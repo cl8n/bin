@@ -1,0 +1,5 @@
+#!/bin/sh
+
+gh pr review -a && \
+gh pr merge -m && \
+git-discard
