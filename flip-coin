@@ -1,3 +1,6 @@
 #!/bin/sh
 
-printf "heads\ntails\n" | shuf -n 1
+option1=${1:-'heads'}
+option2=${2:-'tails'}
+
+printf "$option1\n$option2\n" | shuf -n 1
